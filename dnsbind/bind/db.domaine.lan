@@ -1,0 +1,23 @@
+;
+; BIND data file for local loopback interface
+;
+$TTL	604800
+$ORIGIN domaine.lan.
+@	IN	SOA	dnsm.domaine.lan. root.dnsm.domaine.lan. (
+			      2		; Serial
+			 604800		; Refresh
+			  86400		; Retry
+			2419200		; Expire
+			 604800 )	; Negative Cache TTL
+;
+
+@	IN	NS	dnsm.domaine.lan.
+dnsm.domaine.lan.	IN	A	192.168.60.139
+@	IN	NS	localhost.
+@	IN	A	127.0.0.1
+@	IN	AAAA	::1
+
+xp	IN	A	192.168.60.140
+dnse.domaine.lan.	IN	A	192.168.60.142
+www	IN	CNAME	dnsm.domaine.lan.
+
