@@ -1,0 +1,7 @@
+- name: Configuration et installation de Nagios4
+  hosts: nagios
+  become: yes
+  become_method: sudo
+  become_user: root
+  roles:
+    - config

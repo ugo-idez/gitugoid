@@ -1,0 +1,19 @@
+- name: Copie du fichier srv.cfg pour spécifier le serveur à superviser
+  tags: srv.cfg
+  template:
+    src: srv.cfg
+    dest: /etc/nagios4/objects/
+
+- name: Copie du fichier nagios.cfg pour indiquer les fichiers des serveurs
+  tags: nagios.cfg
+  template:
+    src: nagios.cfg.j2
+    dest: /etc/nagios4/nagios.cfg
+  notify: restart nagios4
+
+- name: On redémarre Apache
+  tags: apache2
+  service:
+    name: apache2
+    state: restarted
+    enabled: yes
