@@ -16,18 +16,6 @@
     name: nagios4
     state: latest
 
-- name: Installation de pip
-  tags: pip
-  apt:
-    name: pip
-    state: latest
-
-- name: On s'assure qu'on pourra utiliser passlib
-  tags: passlib
-  pip:
-    name: passlib
-    state: latest
-
 - name: Copie du fichier nagios4-cgi.conf pour la ligne "Require Valid User"
   tags: nagios4-cgi.conf
   template:
@@ -38,15 +26,6 @@
 - name: On exécute la commande pour le cgi
   tags: cgi
   command: a2enmod rewrite cgi
-
-- name: htdigest pour les utilisateurs
-  tags: htpasswd
-  htpasswd:
-    path: /etc/nagios4/htdigest.users
-    name: "{{ username }}"
-    password: "{{ password }}"
-    crypt_scheme: md5_crypt
-  notify: restart nagios4
 
 - name: On redémarre apache2
   tags: reload
