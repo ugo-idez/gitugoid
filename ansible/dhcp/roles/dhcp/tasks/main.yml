@@ -1,0 +1,49 @@
+- name: apt update
+  tags: update
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Installation des paquets de DHCP
+  tags: utils
+  apt:
+    name: 
+      - isc-dhcp-server
+      - iptables
+    state: latest
+
+- name: Création du dossier nat
+  tags: dossier
+  file:
+    path: /root/nat
+    state: directory
+    mode: 0777
+
+- name: Copie du fichier nat.sh pour le routage
+  tags: nat
+  copy:
+    src: nat.sh
+    dest: /root/nat/
+
+- name: Copie du fichier des interfaces
+  tags: interfaces
+  copy:
+    src: interfaces
+    dest: /etc/network/interfaces
+
+- name: Message
+  tags: msg
+  debug: msg="Il faut redémarrer la machine pour que les adresses Ip se mettent à jour"
+
+- name: Copie du fichier isc-dhcp-server pour préciser le chemin des fichiers de conf
+  tags: isc
+  copy:
+    src: isc-dhcp-server
+    dest: /etc/default/isc-dhcp-server
+
+- name: Copie du fichier dhcpd.conf
+  tags: dhcpd
+  copy:
+    src: dhcpd.conf
+    dest: /etc/dhcp/dhcpd.conf
+  notify: restart dhcp
