@@ -1,0 +1,27 @@
+ScriptAlias /cgi-bin/nagios4 /usr/lib/cgi-bin/nagios4
+ScriptAlias /nagios4/cgi-bin /usr/lib/cgi-bin/nagios4
+Alias /nagios4/stylesheets /etc/nagios4/stylesheets
+
+Alias /nagios4 /usr/share/nagios4/htdocs
+
+<DirectoryMatch (/usr/share/nagios4/htdocs|/usr/lib/cgi-bin/nagios4|/etc/nagios4/stylesheets)>
+    Options FollowSymLinks
+    DirectoryIndex index.php index.html
+    AllowOverride AuthConfig
+	AuthDigestDomain "nagios4"
+	AuthDigestProvider file
+	AuthUserFile	"/etc/nagios4/htdigest.users"
+	AuthGroupFile	"/etc/group"
+	AuthName	"Restricted Nagios4 Access"
+	AuthType	Digest
+	Require	valid-user
+</DirectoryMatch>
+
+<Directory /usr/share/nagios4/htdocs>
+    Options	+ExecCGI	
+</Directory>
+
+<Directory /usr/lib/cgi-bin/nagios4>
+    Options	+ExecCGI	
+    AddHandler cgi-script .cgi
+</Directory>

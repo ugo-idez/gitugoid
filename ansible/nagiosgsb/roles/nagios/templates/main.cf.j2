@@ -1,0 +1,10 @@
+#On active l'authentification SASL
+smtp_sasl_auth_enable=yes
+#Les méthodes pour l'authenfication anonyme
+smtp_sasl_security_options=noanonymous
+#Le chemin de sasl_passwd
+smtp_sasl_password_maps=hash:/etc/postfix/sasl/sasl_passwd
+#On active le cryptage STARTTLS
+smtp_tls_security_level=encrypt
+#Chemin des certificats CA
+smtp_tls_CAfile=/etc/ssl/certs/ca-certificate.crt

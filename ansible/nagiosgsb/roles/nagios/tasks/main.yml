@@ -1,0 +1,135 @@
+- name: apt update
+  tags: update
+  apt:
+    update-cache: yes
+    cache_valid_time: 3600
+
+- name: Installation apache2
+  tags: apache 
+  apt: 
+    name: 
+    - apache2
+    - snmp
+    - nagios4 
+    - nagios-snmp-plugins
+    - python3-passlib
+    state: present
+
+- name: Copie du fichier nagios4-cgi.conf pour apache
+  tags: nagios4-cgi
+  template:
+    src: nagios4-cgi.conf.j2
+    dest: /etc/apache2/conf-enabled/nagios4-cgi.conf
+  notify: restart nagios4
+
+- name: Copier le fichier commands.cfg pour nagios 
+  tags: commande
+  copy:
+    src: commands.cfg
+    dest: /etc/nagios4/objects/commands.cfg
+  notify: restart nagios4 
+
+- name: Copie le fichier nt.cfg pour commenter la ligne qui pose problème
+  tags: nt.cfg
+  copy:
+    src: nt.cfg
+    dest: /etc/nagios-plugins/config/nt.cfg
+  notify: restart nagios4
+
+- name: Copie du fichier hostgroup pour nagios
+  tags: groups
+  copy:
+    src: hostgroups.cfg
+    dest: /etc/nagios4/objects
+  notify: restart nagios4
+
+- name: Copie du fichier des services
+  tags: services
+  copy:
+    src: services.cfg
+    dest: /etc/nagios4/objects
+  notify: restart nagios4
+
+- name: python3 par defaut
+  tags: python3
+  alternatives:
+    link: /usr/bin/python
+    name: python
+    path: /usr/bin/python3
+    priority: 10
+
+- name: Remplacement de la ligne use_authentication=0
+  tags: authentication
+  replace:
+    path: /etc/nagios4/cgi.cfg
+    regexp: 'use_authentication=0'
+    replace: 'use_authentication=1'
+  notify: restart nagios4
+
+
+- name: a2enmod rewrite cgi
+  tags: a2enmod
+  command: a2enmod rewrite cgi
+  notify:
+    - restart apache2
+    - restart nagios4
+
+      #- name: Mot de passe pour nagiosadmin
+      #  tags: passwd
+      #  command: htdigest -c /etc/nagios4/htdigest.users "{{ access }}" nagiosadmin
+      #  register: htpexist
+    
+- name: Copie du fichier contact
+  tags: contact
+  template:
+    src: contacts.cfg.j2
+    dest: /etc/nagios4/objects/contacts.cfg
+
+- name: Copie des fichiers des machines 
+  tags: cfg
+  copy:
+    src: cfg/
+    dest: /etc/nagios4/objects
+  notify: restart nagios4
+
+- name: Copie du fichier nagios.cfg
+  tags: nagios.cfg
+  template:
+    src: nagios.cfg.j2
+    dest: /etc/nagios4/nagios.cfg
+  notify:
+    - restart nagios4
+    - restart apache2
+
+- name: message d'information
+  tags: msg
+  debug: msg="Pour superviser le Windows, il faut installer NSClient++"
+
+- name: Installation de postfix et de mailutils
+  tags: install postfix
+  apt:
+    name:
+      - postfix
+      - mailutils
+    state: latest
+
+- name: Copie du fichier sasl_passwd
+  tags: sasl_passwd
+  copy:
+    src: sasl_passwd
+    dest: /etc/postfix/sasl/
+
+- name: Copie du fichier main.cf
+  tags: main.cf
+  template:
+    src: main.cf.j2
+    dest: /etc/postfix.main.cf
+
+- name: Commande postmap
+  tags: postmap
+  command: postmap /etc/postfix/sasl_passwd
+  notify: restart postfix
+
+- name: message d'information pour gmail
+  tags: msg2
+  debug: msg="Il faut activer les applications moins sécurisées sur le compte google"

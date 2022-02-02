@@ -1,0 +1,2 @@
+[smtp.gmail.com]:587	nagios.gsb22@gmail.com:Azerty1+
+chmod 600 /etc/postfix/sasl_passwd

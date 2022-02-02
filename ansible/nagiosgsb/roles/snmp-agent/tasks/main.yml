@@ -1,0 +1,16 @@
+  - name: Installation snmpd
+    apt:
+      name: snmpd 
+      state: present
+
+  - name: Installation snmp
+    apt:
+      name: snmp
+      state: present
+
+  - name: Copie du fichier snmpd.conf
+    copy:
+      src: snmpd.conf 
+      dest: /etc/snmp/
+    notify:
+      - restart snmpd

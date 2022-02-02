@@ -1,0 +1,41 @@
+---
+- name: Installation Postfix
+  apt: name=postfix state=present
+
+- name: Installation mailutils
+  apt: name=mailutils state=present
+
+- name: Installation libsasl2-2
+  apt: name=libsasl2-2 state=present
+
+- name: Installation ca-certificates
+  apt: name=ca-certificates state=present
+
+- name: Installation libsasl2-modules
+  apt: name=libsasl2-modules state=present
+
+- name: Copie main.cf
+  copy: src=main.cf dest=/etc/postfix/
+
+- name: Copie sasl_passwd
+  copy: src=sasl_passwd dest=/etc/postfix
+
+- name: attribution des droits sasl_passwd
+  shell: chmod 400 /etc/postfix/sasl_passwd
+
+- name: postmap
+  shell: /usr/sbin/postmap /etc/postfix/sasl_passwd
+
+- name: Copie thawte_Premium_Server_CA.pem
+  copy: src=thawte_Premium_Server_CA.pem dest=/etc/ssl/certs/
+
+- name: Certificats 
+  shell: cat /etc/ssl/certs/thawte_Premium_Server_CA.pem |tee -a /etc/postfix/cacert.pem
+  notify:
+    - restart postfix
+
+- name: Changement des droits icinga.log
+  file:
+    path: /var/log/icinga/icinga.log
+    state: touch
+    mode: u=rw,g=w

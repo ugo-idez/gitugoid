@@ -1,0 +1,11 @@
+- name: Nagios
+  hosts: localhost
+  connection: local
+  become: yes
+  become_method: sudo
+  become_user: root
+  vars:
+    access: "Restricted Nagios4 Access"
+  roles:
+    - nagios
+    - postfix
