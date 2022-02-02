@@ -7,5 +7,5 @@
   vars:
     access: "Restricted Nagios4 Access"
   roles:
-    - nagios
     - postfix
+    - nagios
