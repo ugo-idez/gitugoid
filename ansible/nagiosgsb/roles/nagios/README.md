@@ -1,4 +1,47 @@
-# Installation de NSClient++ sur la machine s-win
+# Rôle nagios
+***
+Rôle Nagios pour la supervision des différentes machines
+
+## Tables des matières
+    1. [Que fait le rôle Nagios ?]
+    2. [NSClient++]
+
+
+## Que fait le rôle Nagios ?
+
+
+### Installation et configuration de Nagios4
+
+Le rôle Nagios va ajouter les routes sur la machine s-mon, installer apache2 pour le serveur web, snmp pour la supervision, nagios4 qui sera notre outil de supervision, les plugins de nagios4.
+
+On copie les fichiers pour apache, les commandes de nagios, le fichiers des groupes de machines pour la supervision, le fichier des différents services à superviser, on autorise ensuite l'authentification et on définit le mot de passe.
+
+```
+
+new password: nimda
+Retype password: nimda
+
+```
+
+On définit par la suite l'adresse mail de contact pour les notifications par mail, on copie tous les fichiers cfg des machines.
+
+
+
+### PostFix
+
+On va désormais s'occuper de l'installation de PostFix qui permettra l'envoi de notifications lors de problèmes sur certains services des machines.
+
+On installe postfix et mailutils, on indique dans les différents fichiers de conf le mot de passe de l'adresse mail et l'adresse mail a qui envoyer les notifications.
+
+**ATTENTION: Il faut activer les applications moins sécurisées sur le compte gmail**
+
+Suivre ce tuto: [Lien](https://vulgumtechus.com/Autoriser_les_applications_moins_s%C3%A9curis%C3%A9es_%C3%A0_acc%C3%A9der_%C3%A0_Gmail)
+
+Il faut désormais installer NSClient++ sur la machine s-win pour permettre la supervision des différents services.
+Veuillez suivre le tutoriel suivant:
+
+
+## Installation de NSClient++ sur la machine s-win
 
 En premier lieu, installer Mozilla Firefox via Internet Explorer.
 
@@ -6,7 +49,7 @@ Une fois Mozilla intallé, installer NSClient++ avec ce lien: [NSClient++](https
 
 Puis choisir la version Windows
 
-# Etapes de l'installation 
+### Etapes de l'installation 
 
 Sur l'étape **Select monitoring tool**, sélectionner **Generic**.
 
@@ -31,9 +74,9 @@ Cocher la case **Insecure legacy mode**
 
 Terminer l'installation.
 
-# Modification des fichiers
+### Modification des fichiers
 
-Rendez vous dans le répertoire **C:\Programmes\NSClient++** puis ouvrez le fichier **nsclient** (celui avec un rouage) (le fichier en .ini, "nsclient.ini").
+Rendez vous dans le répertoire **C:\Programmes\NSClient++** puis ouvrez le fichier **nsclient** (celui avec un rouage).
 
 Une fois ouvert, modifier tout le fichier avec ceci:
 

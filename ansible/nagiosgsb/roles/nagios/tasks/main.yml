@@ -74,10 +74,10 @@
     - restart apache2
     - restart nagios4
 
-      #- name: Mot de passe pour nagiosadmin
-      #  tags: passwd
-      #  command: htdigest -c /etc/nagios4/htdigest.users "{{ access }}" nagiosadmin
-      #  register: htpexist
+- name: Mot de passe pour nagiosadmin
+  tags: passwd
+  command: htdigest -c /etc/nagios4/htdigest.users "{{ access }}" nagiosadmin
+  register: htpexist
     
 - name: Copie du fichier contact
   tags: contact
@@ -100,6 +100,24 @@
   notify:
     - restart nagios4
     - restart apache2
+
+- name: Suppression du fichier windows.cfg
+  tags: windowscfg
+  file:
+    state: absent
+    path: /etc/nagios4/objects/windows.cfg
+
+- name: Suppression du fichier printer.cfg
+  tags: printercfg
+  file:
+    state: absent
+    path: /etc/nagios4/objects/printer.cfg
+
+- name: Suppression du fichier switch.cfg
+  tags: switchcfg
+  file:
+    state: absent
+    path: /etc/nagios4/objects/switch.cfg
 
 - name: message d'information
   tags: msg
