@@ -1,0 +1,41 @@
+- name: apt update
+  tags: update
+  apt:
+    update-cache: yes
+    cache_valid_time: 3600
+
+- name: install utils
+  tags: utils
+  apt:
+    name:
+      - bind9
+      - bind9-doc
+      - dnsutils
+
+- name: copie du fichier named.conf.local
+  tags: named.local
+  copy:
+    src: named.conf.local
+    dest: /etc/bind/named.conf.local
+
+- name: copie du fichier db.domaine.lan
+  tags: domaine.lan
+  copy:
+    src: db.domaine.lan
+    dest: /etc/bind/db.domaine.lan
+
+- name: copie du fichier resolv.conf
+  tags: resolv
+  copy:
+    src: resolv.conf
+    dest: /etc/resolv.conf
+
+- name: copie du fichier db.domaine.lan.inv
+  tags: inv
+  copy:
+    src: db.domaine.lan.inv
+    dest: /etc/bind/db.domaine.lan.inv
+
+- name: Message final
+  tags: msg
+  debug: msg="Il faut désormais redémarrer la machine srv et modifier le fichier /etc/resolv.conf de la machine cliente"

@@ -1,0 +1,22 @@
+;
+; BIND reverse data file for local loopback interface
+;
+$TTL	604800
+$ORIGIN 189.168.192.in-addr.arpa.
+@	IN	SOA	dnsm.domaine.lan. root.dnsm.domaine.lan. (
+			      2		; Serial
+			 604800		; Refresh
+			  86400		; Retry
+			2419200		; Expire
+			 604800 )	; Negative Cache TTL
+;
+
+
+@	IN	NS	dnsm.domaine.lan.
+
+
+130	IN	PTR	dnsm.domaine.lan.
+129	IN	PTR	xp.
+
+
+www	CNAME	dnsm.domaine.lan.
