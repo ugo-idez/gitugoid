@@ -1,0 +1,86 @@
+- name: maj
+  tags: maj
+  apt:
+    update-cache: yes
+    cache_valid_time: 3600
+    upgrade: yes
+
+- name: On ajoute les alias (1)
+  tags: alias1
+  lineinfile:
+    path: /root/.bashrc
+    line: 'alias maj="{{ alias1 }}"'
+
+
+- name: On ajoute les alias (2)
+  tags: alias2
+  lineinfile:
+    path: /root/.bashrc
+    line: 'alias clr="{{ alias2 }}"'
+
+- name: install utils
+  tags: utils
+  apt:
+    name:
+      - sudo
+      - nano
+      - tldr
+      - net-tools
+      - ssh
+      - openssh-server
+      - openssh-client
+      - git-core
+      - tree
+      - vim
+      - htop
+      - mc
+      - curl
+      - rsync
+      - aptitude
+      - bash-completion
+      - tmux
+      - wget
+      - unzip
+    state: latest
+
+- name: Message d'information pour tldr
+  tags: msg
+  debug: msg="Ne pas oublier d'exécuter la commande tldr -u"
+
+- name: On décommente la ligne syntax on dans le fichier /etc/vim/vimrc
+  tags: vimrc
+  replace:
+    path: /etc/vim/vimrc
+    regexp: '"syntax on'
+    replace: 'syntax on'
+
+- name: On décommente la ligne set background=dark
+  tags: dark
+  replace:
+    path: /etc/vim/vimrc
+    regexp: '"set background=dark'
+    replace: 'set background=dark'
+
+- name: On désactive le style de bruit bell
+  tags: bell
+  shell: |
+   echo 'set bell-style none' >> /etc/inputrc
+   modprobe -r pcspkr
+
+- name: On créer le fichier pcspkr.conf
+  tags: pcspkr
+  file:
+    path: /etc/modprobe.d/pcspkr.conf
+    state: touch
+    mode: 0755
+
+- name: On blacklist pcspkr qui fait les bips
+  tags: bips
+  lineinfile:
+    path: /etc/modprobe.d/pcspkr.conf
+    line: 'blacklist pcspkr'
+    create: yes
+ 
+- name: Message d'information
+  tags: msg2
+  debug: msg="Il faut maintenant redémarrer la machine afin que tous les changements soient pris en comptent"

@@ -1,0 +1,7 @@
+- name: Playbook pour l'initialisation d'une machine debian
+  hosts: machine
+  become_method: sudo
+  become_user: root
+
+  roles:
+    - machine
