@@ -41,6 +41,7 @@
       - tmux
       - wget
       - unzip
+      - duc
     state: latest
 
 - name: Message d'information pour tldr
