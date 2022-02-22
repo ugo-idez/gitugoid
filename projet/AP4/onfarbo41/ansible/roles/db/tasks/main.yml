@@ -1,0 +1,20 @@
+- name: On démarre MariaDB
+  tags: mariadb
+  service:
+    name: mysql
+    state: started
+
+- name: Création de la BDD bdarbre
+  tags: bdarbre
+  mysql_db:
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+    name: bdarbre
+
+- name: Création de l'utilisateur slam
+  tags: user
+  mysql_user:
+    name: slam
+    password: Azerty1+
+    priv: '*.*:ALL,GRANT'
+    state: present
+    login_unix_socket: /var/run/mysqld/mysqld.sock

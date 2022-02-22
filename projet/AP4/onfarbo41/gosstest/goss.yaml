@@ -1,0 +1,36 @@
+#Ici, on test MariaDB
+port:
+  tcp:3306:
+    listening: true
+    ip:
+    - 127.0.0.1
+
+#Ici, on test ssh
+service:
+  ssh:
+    enabled: true
+    running: true
+group:
+  ssh:
+    exists: true
+    gid: 111
+
+#Ici, on test le serveur web
+http:
+  http://10.121.38.206:
+    status: 200
+    allow-insecure: false
+    no-follow-redirects: false
+    timeout: 5000
+    body:
+    - works
+
+#Ici, on test dokuwiki
+http:
+  http://10.121.38.206/doku/:
+    status: 200
+    allow-insecure: false
+    no-follow-redirects: false
+    timeout: 5000
+    body:
+    - Trace

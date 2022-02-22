@@ -1,0 +1,134 @@
+---
+  - name: Installation des paquets
+    apt:
+      state: latest
+      name:
+      - nginx
+      - php-fpm
+      - php-mbstring
+      - php-mysql
+      - php-gd
+      - php-curl
+      - php-xml
+      - php-apcu
+      - php-ldap
+      - php-imap
+      - php-xmlrpc
+      - php-cas
+      - python3-mysqldb
+      - mariadb-server
+      - python3-pymysql
+      - php-intl
+      - php-bz2
+      - php-zip
+      - postfix
+      - mailutils
+
+  - name: Changement listen dans le fichier conf de php
+    replace:
+      dest: /etc/php/7.4/fpm/pool.d/www.conf
+      regexp: 'listen = /run/php/php7.4-fpm.sock'
+      replace: 'listen = 127.0.0.1:9000'
+      backup: yes
+
+  - name: Effacement block nginx default
+    file:
+      path: /etc/nginx/sites-enabled/default 
+      state: absent
+
+  - name: Creation fichier block nginx
+    template: 
+      src: block.j2 
+      dest: /etc/nginx/sites-enabled/glpi
+
+  - name: Remplacement dans le fichier de conf php du timeout
+    replace:
+      dest: /etc/php/7.4/fpm/php.ini
+      regexp: 'max_execution_time = 30'
+      replace: 'max_execution_time = 600'
+      backup: yes
+
+    notify:
+      - restart nginx
+
+  - name: Creation de la base de donnee mysql
+    mysql_db:
+      name: "{{ glpi_dbname }}"
+      check_implicit_admin: yes
+      state: present
+      login_unix_socket: /var/run/mysqld/mysqld.sock
+
+  - name: Creation de l'utilisateur mysql avec tous les privileges
+    mysql_user:
+      user: "{{ glpi_dbuser }}"
+      password: "{{ glpi_dbpasswd }}"
+      priv: "*.*:ALL,GRANT"
+      login_unix_socket: /var/run/mysqld/mysqld.sock
+      state: present
+ #   with_items:
+  #    - 127.0.0.1
+
+  - name: Creation du repertoire {{ glpi_dir }}
+    file: 
+      path: "{{ glpi_dir }}"
+      state: directory
+      owner: www-data
+      group: www-data
+
+  - name: Installation de GLPI
+    unarchive:
+      src: "{{ depl_url }}/{{ glpi_tgz }}"
+      dest: /var/www/html
+      remote_src: yes
+      owner: www-data
+      group: www-data
+
+  - name: Changement des attributs {{ glpi_dir }}
+    file: 
+      path: "{{ glpi_dir }}" 
+      owner: www-data 
+      group: www-data 
+      mode: 0755 
+      recurse: yes
+
+  - name: Changement des attributs {{ glpi_dir }}/plugins
+    file:
+      path: "{{ glpi_dir }}/plugins"
+      mode: 0777
+      owner: www-data
+      group: www-data
+      recurse: yes
+
+  - name: Installation de Fusioninventory pour Linux
+    unarchive:
+      src: "{{ depl_url }}/{{ fusion }}"
+      dest: "/var/www/html/glpi/plugins"
+      remote_src: yes
+
+  - name: Creation de ficlient
+    file:
+      path: /var/www/html/ficlients
+      state: directory
+      owner: www-data
+      group: www-data
+      mode: 0775
+
+  - name: Attribution des droits nginx.index
+    file:
+      path: /var/www/html/index.nginx-debian.html
+      owner: www-data
+      group: www-data
+      mode: 0775
+
+  - name: Installation de FusionInventory windows x64
+    get_url:
+      url: "{{ depl_url }}/{{ fusion64 }}"
+      dest: "/var/www/html/ficlients"
+
+  - name: Attribution des permissions sur repertoire /plugins/fusioninventory
+    file:
+      path: /var/www/html/glpi/plugins/fusioninventory
+      owner: www-data
+      group: www-data
+      recurse: yes
+      state: directory

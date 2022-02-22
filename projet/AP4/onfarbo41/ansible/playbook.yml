@@ -1,0 +1,10 @@
+- name: Playbook pour onfarbo41
+  hosts: onfarbo 
+  become: yes
+  become_method: sudo
+  become_user: root
+  
+  roles:
+    - adminer
+    - db
+    - dokuwiki 

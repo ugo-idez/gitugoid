@@ -1,0 +1,26 @@
+- name: Création du dossier DokuWiki
+  tags: createfile
+  file:
+    path: /root/dokuwiki
+    state: directory
+    mode: 0755
+
+- name: copie du fichier script d'install de dokuwiki
+  tags: sh
+  copy:
+    src: dokuwiki.sh
+    dest: /root/dokuwiki
+
+- name: On rend exécutable le script d'install
+  tags: chmod
+  file:
+    path: /root/dokuwiki/dokuwiki.sh
+    mode: 0755
+
+- name: exécution du script d'install de dokuwiki
+  tags: exec
+  command: bash /root/dokuwiki/dokuwiki.sh
+
+- name: Message d'information pour dokuwiki
+  tags: msg2
+  debug: msg="Le dokuwiki devra être installer depuis l'adresse http://onfarbo41/doku/install.php"

@@ -1,0 +1,23 @@
+server {
+        listen   80 default_server;
+        root {{ glpi_dir }};
+        index index.php;
+        server_name localhost;
+
+        location / {try_files $uri $uri/ index.php;}
+
+        #prise en charge PHP
+        location ~ \.php$ {
+                fastcgi_pass 127.0.0.1:9000;
+                fastcgi_index index.php;
+                include /etc/nginx/fastcgi_params;
+                fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+                include fastcgi_params;
+                fastcgi_param SERVER_NAME $host;
+  	 }
+
+	location /ficlients {
+		root /var/www/html;
+		autoindex on;
+	}
+}

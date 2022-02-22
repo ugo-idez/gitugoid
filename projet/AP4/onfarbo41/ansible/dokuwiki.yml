@@ -1,0 +1,8 @@
+- name: Playbook pour le dokuwiki 
+  hosts: onfarbo 
+  become: yes
+  become_method: sudo
+  become_user: root
+  
+  roles:
+    - dokuwiki 

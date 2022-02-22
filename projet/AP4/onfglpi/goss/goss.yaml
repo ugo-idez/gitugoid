@@ -1,0 +1,39 @@
+port:
+  tcp:80:
+    listening: true
+    ip:
+    - 0.0.0.0
+  tcp:3306:
+    listening: true
+    ip:
+    - 127.0.0.1
+service:
+  mysql:
+    enabled: true
+    running: true
+user:
+  mysql:
+    exists: true
+    uid: 106
+    gid: 112
+    groups:
+    - mysql
+    home: /nonexistent
+    shell: /bin/false
+group:
+  mysql:
+    exists: true
+    gid: 112
+interface:
+  enp0s3:
+    exists: true
+    addrs:
+    - 192.168.2.12/24
+    - fe80::a00:27ff:fea2:45fd/64
+    mtu: 1500
+  enp0s8:
+    exists: true
+    addrs:
+    - 192.168.0.39/24
+    - fe80::a00:27ff:fe66:36e3/64
+    mtu: 1500

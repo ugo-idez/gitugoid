@@ -1,0 +1,34 @@
+- name: apt update
+  tags: update
+  apt:
+    update-cache: yes
+    cache_valid_time: 3600
+
+- name: install utils
+  tags: utils
+  apt:
+    name:
+      - apache2
+      - php
+      - php-common
+      - libapache2-mod-php
+      - php-cli
+      - php-xml
+      - php-mysql
+      - php-curl
+      - mariadb-server
+      - adminer
+      - python3-pymysql
+    state: present
+
+- name: On créer un lien symbolique
+  tags: link
+  file:
+    src: /usr/share/adminer/adminer
+    dest: /var/www/html/adminer
+    state: link
+
+- name: Message d'information
+  tags: msg
+  debug: msg="Adminer sera accessible depuis l'adresse http://onfarbo41/adminer.php"
+

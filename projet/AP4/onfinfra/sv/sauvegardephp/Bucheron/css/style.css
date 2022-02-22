@@ -1,0 +1,13 @@
+#divBucheron {
+    padding-top: 5vh;
+}
+
+#divSecteur{
+    float: left;
+    padding-top: 5vh;
+}
+
+#dataListEspeces {
+    float: right;
+    margin-left: 80vw;
+}
