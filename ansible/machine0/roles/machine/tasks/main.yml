@@ -22,6 +22,8 @@
   tags: utils
   apt:
     name:
+      - systemd
+      - bash
       - sudo
       - nano
       - tldr
