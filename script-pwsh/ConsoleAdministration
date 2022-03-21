@@ -1,0 +1,29 @@
+﻿while ($true) {
+
+echo "
+        1: Date
+        2: Adresse IP
+        ...
+
+"
+
+
+
+Write-Host "Faites un choix : " -NoNewLine
+
+switch ($choix = Read-Host) {
+    
+    "1" {get-date}
+    "2" {(Get-NetIPAddress -InterfaceIndex 3 -AddressFamily IPv4).IPAddress}
+
+
+
+    default {
+        echo "Ce choix n'est pas valide"
+        }
+
+    }
+
+pause
+cls
+}
