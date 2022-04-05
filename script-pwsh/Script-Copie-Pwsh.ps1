@@ -11,157 +11,185 @@
 # Date: 28/03/2022
 #
 ##############
+Param (
+	[string[]]$FichierCsv
+)
+
+
+
 
 #region Variables ##################################################################
+if ($FichierCsv.length -eq 0){
+	$FichierCsv = ".\copie-ps1.csv"
+}
+If ((Test-path $FichierCsv) -eq $false){
+	write-host "Le fichier $FichierCsv n'existe pas!" -ForeGroundColor RED
+	Exit -1
+}
+$Temp=$FichierCsv[0]
+$logfile = $Temp.Substring(0,$Temp.length -4)+".log"
+$conclusion = $Temp.Substring(0,$Temp.length -4)+".txt"
 
-$path = "C:\Scripts\Copie-ps1\copie-ps1.csv"                # Chemin du fichier csv sur lequel on s'appuiera
-$logfile = "C:\Scripts\Copie-ps1\slog.log"            # Chemin du fichier de log
-$conclusion = "C:\Scripts\Copie-ps1\conclusion.txt"
+$ListeDesCopies = Import-CSV -Path $Temp -Delimiter ";"
 
-$filecsv = Import-CSV -Path $path -Delimiter ";"            # Importation du fichier csv
-
-$NbFichiersCopies = 0                                               # On initialise le compteur (pour par la suite compter le nombre de fichiers copiés)
+$NbFichiersCopies = 0
 $NbFichiersIgnores = 0
 $erreur = 0
-
+$VolumeTotal = 0
+$Job=0
 #endregion
 
 
+#Get-ChildItem C:\Users\uidez\Documents\Test\Source -Filter *.zip| Move-Item -Force -Destination C:\Users\uidez\Documents\Test\Cible
 
 
-
-#region DefFonction #################################################################
+#region Definition des Fonctions #################################################################
 
 function log ( $event ) {
-
+	# La fonctiob Log permet d'alimenter un fichier de logs
+	
     $date = Get-Date -Format "dd/MM/yyyy hh:mm:ss"
     $string = $date + " " + $event
-    
-    ADD-Content -path $logfile -value $string	
+        Add-Content -path $logfile -value $string	
 }
 
-function CopieDiskTODisk {
-
-    $pourcentage = $i/$total *100
-    #$NbFichiersCopies+=1
-    Write-Progress -Activity "Copie du fichier" -Status "Fichier en cours de copie dans {$src}: $($fichier.Name), $i/$total" -PercentComplete $pourcentage      # Barre de progression se basant sur NombreDeFichiersCopiés/NombreDeFichiersRestants
-    # On copie les fichiers
-    #Copy-Item $fichier $dest -Include $filtre
-    $fichier| Copy-Item -Destination $dest -Recurse -Container -Include $filtre
-    #Get-ChildItem C:\Users\uidez\Documents\Test\Source| Copy-Item -Destination C:\Users\uidez\Documents\Test\Cible -Recurse -Container -Include *.*                                                                                                                          
-    Start-Sleep -Milliseconds 15
-    log "$fichier.Name copié sur $dest"
-
+function CopyDisk2Disk {
+	# La fonction CopyDisk2Disk permet une copie d'un fichier d'un disque à un autre
+    Param ( $Source, $Destination)
+    # On copie le fichier
+	#write-host "Source.....: $Source"
+	#write-host "Destination: $Destination"
+    Copy-Item $Source -Destination $Destination
+	#Return $True
 }
+
+function CreerSousRep {
+	# La fonction CreerSousRep va créer sur la destination tous les sous-répertoire contenus dans le chemin
+    Param ( $Destination, $Chemin)
+	$PathACreer=$Destination
+	$Path=$Chemin
+	$Pos=$Path.indexof("\")
+	While ($Pos -ge 0) {
+		$PathACreer=$PathACreer+"\"+$Path.substring(0,$Pos)
+		$Path=$Path.substring($Pos+1,$Path.length-($Pos+1))
+		if ((Test-Path $PathACreer -PathType Container) -eq $false) {
+			Write-Host "   Création du répertoire $PathACreer"
+			New-Item -Path $PathACreer -type directory -Force |Out-Null
+			Log "Création du répertoire $PathACreer"
+		}
+		$Pos=$Path.indexof("\")
+	}
+	#Return $True
+}
+
 
 #endregion
-
-
-
 
 #region Script
 
 # Début de l'enregistrement des logs
-
-$filecsv|Format-Table                                       # On affiche d'abord les différentes lignes du fichier csv
-log "`nLancement du script"
-$Error.Clear()                                              # On nettoie les erreurs de la session
+log "Lancement du script ###############################"
+$Error.Clear()
 $ErrorActionPreference = "continue"
 
-foreach ( $line in $filecsv ) {                             # Pour chaque ligne du fichier csv
 
-    $src = $line.Source                                             # Source
-    $dest = $line.Cible                                             # Destination
-    $filtre = $line.Filtre                                          # Filtre
-    $fichiers = Get-ChildItem $src        # On récupère les fichiers dans les sources récursivement
-    #Get-ChildItem C:\Users\uidez\Documents\Test\Source
-    $fichiersnorecurse = Get-ChildItem -Path $src -Filter $filtre   # On récupère les fichiers dans les sources non-récursivement
+# Pour chaque ligne du fichier csv
+foreach ( $Copie in $ListeDesCopies ) {
 
-    if ( $line.'Copy/Move' -eq "C" ) {                              # Dans le cas d'une copie
+    $src = $Copie.Source
+    $dest = $Copie.Cible
+    $filtre = $Copie.Filtre
+	$Job+=1
+	# $SourceNetwork=$false
+	
+	Write-Host "Job $Job : Copie des fichiers ($filtre)"
+	Write-Host "   Source........ $src"
+	Write-Host "   Destination... $dest"
+	Log "Traitement de $src vers $dest ($filtre)"
 
-        if ( $line.Recurse -eq "O" ) {                                     # Copie des fichiers récursivement
-         
-            $i=0
-            $total = $fichiers.count
+	# If ($src.substring(0,2)="\\"){
+		# la source est un partage réseau
+		# if ($Copie.UserSource.length -gt 0) {
+			# $SourceNetwork=$true
+			# net use
 
-            foreach ( $fichier in $fichiers ) {                                   # Pour chaque fichiers qu'on doit copier
-    
-                        # Compteur dans la boucle foreach fichier pour la barre de progression (fichier en cours de copie)
-                        $i+=1
+	# }
 
-                        $FichierCible = $dest+'\'+$fichier.Name
-                        $ACopier = $False
 
-                        if ( (Test-Path $FichierCible) -eq $False ) {
+	if ( $Copie.Recurse.ToUpper() -eq "O" ) {
+		#L'option Recurse est activée
+		$ListeDesFichiers = Get-ChildItem -path $src -Recurse -filter $filtre
+	}
+	Else {
+		#Pas de Recurse
+		$ListeDesFichiers = Get-ChildItem -path $src -filter $filtre -File
+	}
 
-                            $ACopier = $true
+	$i=0
+	$total = $ListeDesFichiers.count
+	write-host "   $total fichier(s) a examiner"
+	
 
-                        } else {
+    # pour chaque fichier à copier
+	foreach ( $FichierSource in $ListeDesFichiers ) {
+		# Compteur dans la boucle foreach fichier pour la barre de progression (fichier en cours de copie)
+		$i+=1
+		$CheminSource=$FichierSource.Fullname
+		$Chemin=$CheminSource.Substring($src.length+1)
+		
+		CreerSousRep $dest $Chemin
+		
+		$FichierCibleName = $dest+"\"+$Chemin
+		# Recherche sur le fichier à copier existe déjà dans la destination
+		$ACopier = $False
+		if ( (Test-Path $FichierCibleName) -eq $False ) {
+			$ACopier = $true
+		} else {
+			$FichierCible = Get-Item $FichierCibleName
+			if ( ($FichierSource.Length -ne $FichierCible.Length) -or ( $FichierSource.LastWriteTime -ne $FichierCible.LastWriteTime ) ) {
+				$ACopier = $true
+			}
+		}
 
-                            $file = Get-Item $FichierCible
+		# Affichage et barre de progression
+		$pourcentage = $i/$total *100
+		Write-Progress -Activity "Copie du fichier" -Status "$($FichierSource.Name), $i/$total" -PercentComplete $pourcentage
 
-                            if ( ($fichier.Length -ne $file.Length) -or ( $fichier.LastWriteTime -ne $file.LastWriteTime ) ) {
-
-                                $ACopier = $true
-
-                            }
-
-                        }
-                            
-                        if ( $ACopier -eq $true ) {
-                                                                                  
-                            CopieDiskTODisk
-                            $NbFichiersCopies+=1
-                            $long = $fichier.Length/1GB     # On récupère la longueur de chaque fichiers en Go
-                            $volume = $volume + $long
-
-                        } else {
-
-                            $NbFichiersIgnores+=1
-                            #$erreur+=1
-							log "$fichier.Name ignoré"
-
-                        }
-
-                    }
-
-        if ( $line.Recurse -eq "N" ) {                                     # Copie des fichiers non-résursivement
-
-            foreach ( $fichier in $fichiernorecurse ) {
-    
-                        Copy-Item $fichier $dest -Include $filtre
-                        $NbFichiersCopies+=1
-
-                    }
-        
-            }
-
-        }
-
-    }
-
-    Write-Host "`nCopie des fichiers de $src à $dest avec comme extensions $filtre`n"
-
+		if ( $ACopier -eq $true ) {
+			# Si Acopier alors copie
+			CopyDisk2Disk $($FichierSource.Fullname) $FichierCibleName
+			log "$($FichierSource.Name) copié sur $dest"
+			Start-Sleep -Milliseconds 15
+			$NbFichiersCopies+=1
+			$TailleFichier= $fichier.Length/1GB
+			$VolumeTotal = $VolumeTotal + $TailleFichier
+			# si l'option Move est activée, je supprime le fichier après copie
+			if ( $Copie.'CopyMove'.ToUpper() -eq "M" ) {
+				Remove-Item $($FichierSource.Fullname) -Force
+			}
+		}
+		else {
+			# Sinon le fichier existe déjà.
+			$NbFichiersIgnores+=1
+			#$erreur+=1
+			log "$($FichierSource.Name) ignoré"
+		}
+	}
 }
 
-$erreur = $erreur + $Error.Count
-
-Write-Host "$NbFichiersCopies fichier(s) copiés pour $volume Go"
+$NbErreurs = $($Error.Count)
+$erreur = $(($erreur + $NbErreurs))
+Write-Host ""
+Write-Host "$NbFichiersCopies fichier(s) copiés pour $VolumeTotal Go"
 Write-Host "$NbFichiersIgnores fichier(s) ignorés"
 Write-Host "$erreur erreur(s)."
 
-
-
-if ( $error -eq $null ) {
-
-    Set-Content -path $conclusion -value "Ok $NbFichiersCopies pour $volume Go "
-
+if ( $erreur -eq '0' ) {
+	Set-Content -path $conclusion -value "Ok $NbFichiersCopies fichiers copiés pour $VolumeTotal Go, $NbFichiersIgnores fichier(s) existe(nt) deja. "
 } else {
-
-    Set-Content -path $conclusion -value "Critical x$erreur erreur(s) $NbFichiersCopies fichiers copiés pour $volume Go"
-
+	Set-Content -path $conclusion -value "Critical x $erreur erreur(s), $NbFichiersCopies fichiers copiés pour $VolumeTotal Go"
 }
 
-log "Fin de l'exécution"
+log "Fin de l'exécution ################################"
 
 #endregion
